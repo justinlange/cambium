@@ -85,6 +85,7 @@ def make_sweep(
             {
                 "index": i,
                 "mac": f.mac,
+                "fixture_id": f.fixture_id,
                 "class": f.cls.name,
                 "alive_at_freeze": True,
             }

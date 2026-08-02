@@ -136,6 +136,36 @@ def build_app(
             return _err(404, str(e))
         return web.json_response({"ok": True, "id": fid, "rgbw": [r, g, b, w]})
 
+    async def bridge(request: web.Request) -> web.Response:
+        # The ops CLI's --daemon mode reads this instead of opening the
+        # serial port (the daemon owns it exclusively).
+        return web.json_response(await services.bridge_status())
+
+    async def debug_night(request: web.Request) -> web.Response:
+        raw = request.query.get("mode")
+        if raw not in ("0", "1", "2"):
+            return _err(
+                400,
+                f"query param mode must be 0 (force day), 1 (force night) or "
+                f"2 (auto), got {raw!r}; e.g. /debug/night?mode=1",
+            )
+        mac = request.query.get("mac") or None
+        await services.send_night(int(raw), mac)
+        return web.json_response({"ok": True, "mode": int(raw), "mac": mac})
+
+    async def debug_identify(request: web.Request) -> web.Response:
+        mac = request.query.get("mac") or None  # absent = broadcast
+        try:
+            secs = _u8_query(request, "secs")
+            color = _u8_query(request, "color")
+            blink = int(request.query.get("blink", "0")) != 0
+        except ValueError as e:
+            return _err(400, str(e))
+        await services.send_identify(mac, secs, color, blink)
+        return web.json_response(
+            {"ok": True, "mac": mac, "secs": secs, "color": color}
+        )
+
     async def ws_handler(request: web.Request) -> web.WebSocketResponse:
         ws = web.WebSocketResponse()
         await ws.prepare(request)
@@ -156,9 +186,12 @@ def build_app(
 
     app.router.add_get("/healthz", healthz)
     app.router.add_get("/fleet", fleet)
+    app.router.add_get("/bridge", bridge)
     app.router.add_get("/constellate/light", constellate_light)
     app.router.add_get("/constellate/off", constellate_off)
     app.router.add_get("/debug/solid", debug_solid)
+    app.router.add_get("/debug/night", debug_night)
+    app.router.add_get("/debug/identify", debug_identify)
     app.router.add_get("/ws", ws_handler)
 
     async def _lifecycle(app: web.Application):

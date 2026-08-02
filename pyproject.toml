@@ -11,6 +11,7 @@ requires-python = ">=3.12"
 dependencies = [
     "aiohttp>=3.9",
     "pyserial-asyncio>=0.6",
+    "numpy>=2",  # mapping only: Umeyama similarity fit (map align)
 ]
 
 [project.optional-dependencies]

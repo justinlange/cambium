@@ -74,7 +74,8 @@ Planned single-file modules (see ARCHITECTURE for responsibilities): `model.py`
 | daemon, cli (`cambium serve`) | built + loopback smoke-tested (W2) |
 | fakefleet (emulator, viewer, `cambium fakefleet run`, make-sweep) | built + tested (W3) |
 | cambium_bridge firmware sketch | built, compile-gated + COBS parity (W4) |
-| mapping pipeline + CLI (`cambium sweep/assign/night/...`) | pending (W5) |
+| mapping pipeline (`cambium sweep/map ...`) | built + tested (W5) |
+| ops CLI (`cambium doctor/blink/night/identify`) | built + tested (W5) |
 
 ## Design principles
 

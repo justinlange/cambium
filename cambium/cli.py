@@ -1,8 +1,8 @@
 """The `cambium` console script.
 
-`cambium serve` runs the daemon today; the mapping/ops subcommands are
-declared now (so the help text shows the intended shape) but land in phase
-W5 -- invoking one exits 2 with a pointer to the README status table.
+`cambium serve` / `cambium fakefleet run` run the daemon; `cambium sweep` /
+`cambium map` drive the spatial-commissioning pipeline; `cambium doctor` /
+`blink` / `night` / `identify` are the bench ops tools.
 """
 
 from __future__ import annotations
@@ -15,20 +15,11 @@ import sys
 
 from cambium.config import CambiumConfig
 from cambium.daemon import Daemon
+from cambium.mapping.cli import add_map_parser, add_sweep_parser, cmd_map, cmd_sweep
+from cambium.ops.cli import add_ops_parsers, run_ops
 from cambium.roster import Roster
 from cambium.transport.loopback import LoopbackTransport
 from cambium.transport.serial_cobs import SerialCobsTransport
-
-# Subcommand -> one-line help; all of these are phase W5 (mapping pipeline +
-# ops tooling). Declared here so `cambium --help` already shows the shape.
-_PLANNED = {
-    "doctor": "check bridge + fleet health end to end",
-    "blink": "blink one fixture for physical identification",
-    "night": "force night/day lifecycle override (the night gate is real)",
-    "sweep": "drive a Constellate mapping sweep",
-    "map": "build fixtures-map.json from sweep results",
-    "identify": "hold an identify pattern on a fixture",
-}
 
 
 def _build_parser() -> argparse.ArgumentParser:
@@ -100,12 +91,9 @@ def _build_parser() -> argparse.ArgumentParser:
         help="rng seed for --loss determinism (default: %(default)s)",
     )
 
-    for name, help_text in _PLANNED.items():
-        p = sub.add_parser(name, help=f"{help_text} (coming in phase W5)")
-        # Swallow any arguments so a W5-shaped invocation reaches our
-        # "coming soon" message instead of an argparse usage error.
-        p.add_argument("argv", nargs=argparse.REMAINDER, help=argparse.SUPPRESS)
-
+    add_sweep_parser(sub)
+    add_map_parser(sub)
+    add_ops_parsers(sub)
     return parser
 
 
@@ -255,11 +243,13 @@ def main(argv: list[str] | None = None) -> int:
         return _serve(args)
     if args.command == "fakefleet":
         return _fakefleet_run(args)
-    print(
-        f"cambium {args.command}: coming in phase W5 -- see the README "
-        f"status table",
-        file=sys.stderr,
-    )
+    if args.command == "sweep":
+        return cmd_sweep(args)
+    if args.command == "map":
+        return cmd_map(args)
+    if args.command in ("doctor", "blink", "night", "identify"):
+        return run_ops(args)
+    print(f"cambium: unknown command {args.command!r}", file=sys.stderr)
     return 2
 
 

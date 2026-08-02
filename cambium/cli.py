@@ -91,6 +91,20 @@ def _build_parser() -> argparse.ArgumentParser:
         help="rng seed for --loss determinism (default: %(default)s)",
     )
 
+    p_fake_sweep = fake_sub.add_parser(
+        "make-sweep",
+        help="emit a synthetic Constellate export + frozen roster (rehearse "
+        "the map pipeline with zero hardware, no Constellate install)",
+    )
+    p_fake_sweep.add_argument("--out", required=True, metavar="DIR",
+                              help="e.g. site/rehearsal/sweeps/t1")
+    p_fake_sweep.add_argument("--fixtures", help="Elliot-schema fixtures json")
+    p_fake_sweep.add_argument("--count", type=int, default=10)
+    p_fake_sweep.add_argument("--seed", type=int, default=0)
+    p_fake_sweep.add_argument("--noise-m", type=float, default=0.02)
+    p_fake_sweep.add_argument("--dropout", default="",
+                              help="comma-separated indexes to omit, e.g. 3,7")
+
     add_sweep_parser(sub)
     add_map_parser(sub)
     add_ops_parsers(sub)
@@ -110,6 +124,41 @@ def _load_config(path: str, cmd: str) -> CambiumConfig | None:
     except ValueError as e:
         print(f"cambium {cmd}: {e}", file=sys.stderr)
     return None
+
+
+def _fakefleet_make_sweep(args: argparse.Namespace) -> int:
+    import datetime
+
+    from cambium.fakefleet.make_sweep import make_sweep
+    from cambium.fakefleet.runner import fixtures_from_file, synthetic_fixtures
+
+    fixtures = (
+        fixtures_from_file(args.fixtures) if args.fixtures
+        else synthetic_fixtures(args.count)
+    )
+    dropout = [int(x) for x in args.dropout.split(",") if x.strip()]
+    created = datetime.datetime.now(datetime.timezone.utc).strftime(
+        "%Y-%m-%dT%H:%M:%SZ"
+    )
+    try:
+        paths = make_sweep(
+            fixtures, args.out, created=created, seed=args.seed,
+            noise_m=args.noise_m, dropout=dropout,
+        )
+    except (ValueError, OSError) as e:
+        print(f"cambium fakefleet make-sweep: {e}", file=sys.stderr)
+        return 2
+    for k, v in paths.items():
+        print(f"{k}: {v}")
+    parts = args.out.rstrip("/").split("/")
+    sweep_name = parts[-1]
+    # site/<name>/sweeps/<sweep> -> tell the next command which --site
+    site_flag = ""
+    if len(parts) >= 3 and parts[-2] == "sweeps" and parts[-3] != "site":
+        site_flag = f" --site {parts[-3]}"
+    print(f"\nnext: cambium map ingest {paths['session']} "
+          f"--sweep {sweep_name}{site_flag}")
+    return 0
 
 
 def _fakefleet_run(args: argparse.Namespace) -> int:
@@ -242,6 +291,8 @@ def main(argv: list[str] | None = None) -> int:
     if args.command == "serve":
         return _serve(args)
     if args.command == "fakefleet":
+        if args.fake_command == "make-sweep":
+            return _fakefleet_make_sweep(args)
         return _fakefleet_run(args)
     if args.command == "sweep":
         return cmd_sweep(args)

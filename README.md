@@ -37,12 +37,15 @@ wood and bark: everything that grows passes through it.
 
 ## Start here
 
-| You have | Read | Status |
-|---|---|---|
-| No hardware at all | `QUICKSTART-NO-HARDWARE.md` (fake fleet + simulator) | coming (phase W3) |
-| The 10-lantern bench | `QUICKSTART-BENCH10.md` (bridge + real fixtures) | coming (phase W4/W5) |
-| Questions about words | [docs/GLOSSARY.md](docs/GLOSSARY.md) — the three-repo term-collision table | here now |
-| Questions about shape | [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md) — data flow, modules, constraints | here now |
+| You have | Read |
+|---|---|
+| No hardware at all | [docs/QUICKSTART-NO-HARDWARE.md](docs/QUICKSTART-NO-HARDWARE.md) — fake fleet + simulator, ~15 min |
+| The 10-lantern bench | [docs/QUICKSTART-BENCH10.md](docs/QUICKSTART-BENCH10.md) — bridge + real fixtures + what-if table |
+| A sweep to run | [docs/MAPPING.md](docs/MAPPING.md) — frames, artifacts, scale doctrine |
+| Wire questions | [docs/PROTOCOLS.md](docs/PROTOCOLS.md) — all three contracts, incl. the proposed types 25/26 |
+| Test questions | [docs/TESTING.md](docs/TESTING.md) — what is proven where, and what needs the bench |
+| Word confusion | [docs/GLOSSARY.md](docs/GLOSSARY.md) — the three-repo term-collision table |
+| Shape questions | [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md) — data flow, modules, constraints |
 
 ## Repo layout
 
@@ -76,6 +79,9 @@ Planned single-file modules (see ARCHITECTURE for responsibilities): `model.py`
 | cambium_bridge firmware sketch | built, compile-gated + COBS parity (W4) |
 | mapping pipeline (`cambium sweep/map ...`) | built + tested (W5) |
 | ops CLI (`cambium doctor/blink/night/identify`) | built + tested (W5) |
+| docs (quickstarts, MAPPING, PROTOCOLS, TESTING) | built (W6) |
+| Elliot branch `cambium-ws-bridge` (resonance-lighting) | built, npm build + 263 tests green (W6) |
+| Ben branch `cambium-direct-frames` (resonance-hardware) | built, native suite green — awaiting Ben's review (W4) |
 
 ## Design principles
 

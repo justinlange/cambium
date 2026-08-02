@@ -122,14 +122,22 @@ def make_sweep(
         "dropout": sorted(dropout),
     }
 
+    # Three ready-made anchors from ground truth so the align step of the
+    # no-hardware runbook is copy-pasteable (real sweeps tape-measure these).
+    anchor_ids = [i for i in (0, len(placed) // 2, len(placed) - 1)
+                  if str(i) in points][:3]
+    anchors = [{"index": i, "world": list(placed[i].xyz)} for i in anchor_ids]
+
     paths = {
         "roster": out / "roster.json",
         "session": out / "session",
         "points": out / "session" / "export" / "points.json",
         "truth": out / "truth.json",
+        "anchors": out / "anchors.example.json",
     }
     paths["roster"].write_text(json.dumps(roster, indent=2) + "\n")
     (out / "session" / "session.json").write_text(json.dumps(session, indent=2) + "\n")
     paths["points"].write_text(json.dumps(points, indent=2) + "\n")
     paths["truth"].write_text(json.dumps(truth, indent=2) + "\n")
+    paths["anchors"].write_text(json.dumps(anchors, indent=2) + "\n")
     return {k: str(v) for k, v in paths.items()}

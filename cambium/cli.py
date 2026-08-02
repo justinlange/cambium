@@ -27,7 +27,6 @@ _PLANNED = {
     "night": "force night/day lifecycle override (the night gate is real)",
     "sweep": "drive a Constellate mapping sweep",
     "map": "build fixtures-map.json from sweep results",
-    "fakefleet": "run the in-process fake fleet (no hardware)",
     "identify": "hold an identify pattern on a fixture",
 }
 
@@ -60,6 +59,46 @@ def _build_parser() -> argparse.ArgumentParser:
         help="serial device of the bridge board (e.g. /dev/tty.usbmodem101); "
         "required with --transport serial",
     )
+    p_serve.add_argument(
+        "--fake-fleet",
+        type=int,
+        metavar="N",
+        help="attach N synthetic fixtures behind a loopback transport "
+        "(implies --transport loopback)",
+    )
+
+    p_fake = sub.add_parser(
+        "fakefleet", help="run the in-process fake fleet (no hardware)"
+    )
+    fake_sub = p_fake.add_subparsers(dest="fake_command", required=True)
+    p_fake_run = fake_sub.add_parser(
+        "run", help="daemon + N virtual fixtures + browser viewer"
+    )
+    p_fake_run.add_argument(
+        "--config", default="config/cambium.toml",
+        help="path to cambium.toml (default: %(default)s)",
+    )
+    p_fake_run.add_argument(
+        "--fixtures",
+        help="Elliot-schema fixtures json (e.g. resonance-lighting/app/"
+        "public/fixtures-bench10.json); default: --count synthetic line",
+    )
+    p_fake_run.add_argument(
+        "--count", type=int, default=10,
+        help="synthetic fixture count when no --fixtures file (default: %(default)s)",
+    )
+    p_fake_run.add_argument(
+        "--start-night", action="store_true",
+        help="boot the virtual fixtures in NIGHT (skip the day-gate rehearsal)",
+    )
+    p_fake_run.add_argument(
+        "--loss", type=float, default=0.0, metavar="P",
+        help="drop daemon->fleet frames with probability P (rehearse radio loss)",
+    )
+    p_fake_run.add_argument(
+        "--seed", type=int, default=0,
+        help="rng seed for --loss determinism (default: %(default)s)",
+    )
 
     for name, help_text in _PLANNED.items():
         p = sub.add_parser(name, help=f"{help_text} (coming in phase W5)")
@@ -70,7 +109,85 @@ def _build_parser() -> argparse.ArgumentParser:
     return parser
 
 
+def _load_config(path: str, cmd: str) -> CambiumConfig | None:
+    try:
+        return CambiumConfig.load(path)
+    except FileNotFoundError:
+        print(
+            f"cambium {cmd}: config file {path!r} not found; pass "
+            f"--config path/to/cambium.toml (see config/cambium.toml in the "
+            f"repo) or run from the repo root",
+            file=sys.stderr,
+        )
+    except ValueError as e:
+        print(f"cambium {cmd}: {e}", file=sys.stderr)
+    return None
+
+
+def _fakefleet_run(args: argparse.Namespace) -> int:
+    import random
+
+    from cambium.fakefleet.runner import (
+        FakeFleet,
+        fixtures_from_file,
+        synthetic_fixtures,
+    )
+    from cambium.fakefleet.viewer import attach_viewer
+    from cambium.roster import Roster
+
+    config = _load_config(args.config, "fakefleet run")
+    if config is None:
+        return 2
+    if args.fixtures:
+        try:
+            fixtures = fixtures_from_file(args.fixtures)
+        except (OSError, ValueError) as e:
+            print(f"cambium fakefleet run: {e}", file=sys.stderr)
+            return 2
+    else:
+        fixtures = synthetic_fixtures(args.count)
+
+    logging.basicConfig(level=logging.INFO, format="%(asctime)s %(name)s %(message)s")
+    transport = LoopbackTransport(
+        loss_rate=args.loss, rng=random.Random(args.seed)
+    )
+    fleet = FakeFleet(fixtures, start_night=args.start_night)
+    # The daemon addresses the SAME fixtures the fake fleet embodies.
+    daemon = Daemon(config, transport, Roster(list(fixtures)))
+    attach_viewer(daemon.app, fleet)
+
+    print(f"fake fleet: {len(fixtures)} fixtures | viewer: "
+          f"http://localhost:{config.port}/fakefleet/")
+    if not args.start_night:
+        print('fixtures boot DAY-gated (like real hardware): run '
+              '"cambium night on" (W5) or pass --start-night')
+    asyncio.run(_run_with_fleet(daemon, fleet, transport))
+    return 0
+
+
+async def _run_with_fleet(daemon: Daemon, fleet, transport: LoopbackTransport) -> None:
+    await daemon.start()
+    await fleet.start(transport.peer)
+    stop = asyncio.Event()
+    loop = asyncio.get_running_loop()
+    for sig in (signal.SIGINT, signal.SIGTERM):
+        loop.add_signal_handler(sig, stop.set)
+    try:
+        await stop.wait()
+    finally:
+        await fleet.stop()
+        await daemon.stop()
+
+
 def _serve(args: argparse.Namespace) -> int:
+    if args.fake_fleet:
+        # serve --fake-fleet N == fakefleet run --count N (one wiring path).
+        args.count = args.fake_fleet
+        args.fixtures = None
+        args.start_night = False
+        args.loss = 0.0
+        args.seed = 0
+        return _fakefleet_run(args)
     if args.transport == "serial" and not args.port:
         print(
             "cambium serve: --port is required with --transport serial "
@@ -136,6 +253,8 @@ def main(argv: list[str] | None = None) -> int:
     args = _build_parser().parse_args(argv)
     if args.command == "serve":
         return _serve(args)
+    if args.command == "fakefleet":
+        return _fakefleet_run(args)
     print(
         f"cambium {args.command}: coming in phase W5 -- see the README "
         f"status table",

@@ -1,0 +1,13 @@
+# edit this file: keep only the 10 powered bench lanterns; class column: downlight|perimeter|uplight|chandelier
+# generated from resonance-hardware/ops/fleet/registry.csv (commissioned, serial_bridge excluded)
+fixture_id,mac,class,x,y,z,notes
+B000,9F2694,downlight,,,,
+B001,F2BDB4,downlight,,,,
+B002,F2BDC0,downlight,,,,
+B003,F2BE38,downlight,,,,
+B004,F2BE60,downlight,,,,
+B005,F2BE70,downlight,,,,
+B006,F2BE94,downlight,,,,
+B007,F2BFA0,downlight,,,,
+B008,F3FD7C,downlight,,,,
+B009,F40174,downlight,,,,

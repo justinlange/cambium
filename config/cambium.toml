@@ -1,0 +1,18 @@
+# Cambium middleware config. These values match the code defaults in
+# cambium/config.py; edit and restart cambium to apply.
+
+[server]
+host = "0.0.0.0"
+port = 8600
+
+[radio]
+channel = 11        # ESP-NOW WiFi channel; must match the fixture firmware
+tx_hz = 8.0         # downlink frame rate toward the fleet
+stale_input_s = 2.0 # blackout output if the simulator goes quiet this long
+
+[color]
+white_extract = "subtract" # how RGB maps onto the RGBW white channel
+
+[paths]
+site = "bench"
+roster = "config/roster-bench10.csv"

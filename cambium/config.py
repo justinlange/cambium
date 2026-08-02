@@ -59,4 +59,15 @@ class CambiumConfig:
                         + " -- remove it or fix the spelling"
                     )
                 setattr(cfg, key, value)
+        # Local import: config is imported everywhere; a module-level
+        # config -> normalize dependency would be an import cycle magnet.
+        from cambium.normalize.color import POLICIES
+
+        if cfg.white_extract not in POLICIES:
+            raise ValueError(
+                f"{p}: [color] white_extract = {cfg.white_extract!r} is not a "
+                "policy; valid values: " + ", ".join(POLICIES)
+                + " -- fix the spelling (this fails at startup so it cannot "
+                "surface as a per-frame error mid-show)"
+            )
         return cfg

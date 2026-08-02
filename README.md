@@ -70,7 +70,8 @@ Planned single-file modules (see ARCHITECTURE for responsibilities): `model.py`
 | docs (README, GLOSSARY, ARCHITECTURE) | built |
 | wire | built + golden-parity tested (W1) |
 | model, roster, config | built + tested (W1) |
-| normalize, downlink, uplink, transport, api, daemon | pending (W2) |
+| normalize, downlink, uplink, transport, api | built + tested (W2) |
+| daemon, cli (`cambium serve`) | built + loopback smoke-tested (W2) |
 | fakefleet | pending (W3) |
 | cambium_bridge firmware sketch | pending (W4) |
 | mapping pipeline + CLI (`cambium sweep/assign/night/...`) | pending (W5) |

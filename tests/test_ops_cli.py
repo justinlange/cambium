@@ -97,6 +97,17 @@ async def test_night_on_flips_fleet_and_doctor_goes_green():
         assert all(vf.night for vf in s.fleet.fixtures.values())
         # stock-firmware fallback is always mentioned
         assert any("N1" in ln for ln in lines)
+        deadline = time.monotonic() + 2.0
+        while time.monotonic() < deadline and not all(
+            (entry.get("telemetry") or {}).get("life_state") == 3
+            for entry in s.daemon.fleet.snapshot().values()
+        ):
+            await asyncio.sleep(0.05)
+        code, lines = await commands.doctor(
+            s.link, s.roster, expect_channel=11, listen_s=0.1
+        )
+        assert code == 0
+        assert "ok   night gate: fleet is in NIGHT" in "\n".join(lines)
 
 
 async def test_blink_roll_call_in_sweep_order():

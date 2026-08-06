@@ -73,16 +73,26 @@ async def doctor(
             f"out of range, or the roster lists a lantern not on the bench"
         )
 
-    # Stage 5: the night gate (warn-only: mapping works in daylight).
-    day = [m for m, c in census.items() if c.get("life_state") in (0, None)]
-    if day:
+    # Stage 5: the night gate (warn-only: mapping works in daylight). The
+    # firmware's LifeState enum is 0=boot, 1=day-charge, 2=day-active,
+    # 3=night-show. A short heartbeat omits this tail entirely, so unknown is
+    # not evidence of day (or night).
+    gated = [m for m, c in census.items() if c.get("life_state") in (0, 1, 2)]
+    unknown = [m for m, c in census.items() if c.get("life_state") is None]
+    if gated:
         lines.append(
-            f"warn night gate: {len(day)}/{len(census)} fixtures are in DAY "
-            f"lifecycle -- they will IGNORE show frames. Run `cambium night "
+            f"warn night gate: {len(gated)}/{len(census)} fixtures are not in "
+            f"NIGHT_SHOW -- they will IGNORE show frames. Run `cambium night "
             f"on`; on stock firmware (no NB_FORCE_LIFECYCLE yet) type N1 "
             f"over each lantern's own USB serial instead"
         )
-    else:
+    if unknown:
+        lines.append(
+            f"warn night gate: {len(unknown)}/{len(census)} fixtures have an "
+            f"unknown lifecycle because only hb-full carries that field -- "
+            f"do not infer DAY or NIGHT from a short census"
+        )
+    if not gated and not unknown:
         lines.append("ok   night gate: fleet is in NIGHT, shows will render")
 
     lines.append("READY")
@@ -90,7 +100,7 @@ async def doctor(
 
 
 def _life_str(v) -> str:
-    return {0: "day", 1: "night"}.get(v, "?")
+    return {0: "boot", 1: "day-charge", 2: "day-active", 3: "night"}.get(v, "?")
 
 
 async def blink(

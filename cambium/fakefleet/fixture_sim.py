@@ -346,7 +346,7 @@ class VirtualFixture:
         """Heartbeats due at `now`: hb-short 1 Hz (dev), hb-full 60 s + edges."""
         now = self._clock() if now is None else now
         out: list[bytes] = []
-        life = 1 if self.night else 0
+        life = 3 if self.night else 1
         if life != self._last_life_reported:
             self._full_due = True
         if self._full_due or now >= self._next_full_at:
@@ -378,7 +378,7 @@ class VirtualFixture:
             # Only the fields cambium's FleetState reads are non-zero; the
             # remaining tails stay zeroed (valid absent sentinels).
             struct.pack_into("<24s", buf, _HB_OFF_FW_REV, b"fake-fleet-0.1")
-            buf[_HB_OFF_LIFE_STATE] = 1 if self.night else 0
+            buf[_HB_OFF_LIFE_STATE] = 3 if self.night else 1
             buf[_HB_OFF_POWER_TIER] = 0
         return bytes(buf)
 

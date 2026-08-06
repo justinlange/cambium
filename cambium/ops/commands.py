@@ -147,7 +147,7 @@ async def night(link, mode_word: str, *, mac: str | None = None) -> tuple[int, l
     await link.send_night(modes[mode_word], mac)
     return 0, [
         f"sent force-lifecycle {mode_word}" + (f" to {mac}" if mac else " (all)"),
-        "note: stock firmware (without the cambium-direct-frames branch) "
-        "ignores this packet -- there the only override is typing N1/N0/N2 "
-        "over each lantern's own USB serial",
+        "note: fixture firmware older than fixture-2026-08-06.4 ignores this "
+        "packet -- there the only override is typing N1/N0/N2 over each "
+        "lantern's own USB serial",
     ]

@@ -225,7 +225,7 @@ static void pumpSerial() {
 void setup() {
   Serial.begin(115200); // nominal; native USB CDC ignores the baud rate
 
-  // ESP-NOW init per resonance-hardware espnow_link.cpp: STA mode but never
+  // ESP-NOW init per resonance-lighting espnow_link.cpp: STA mode but never
   // associated, explicit channel, single unencrypted broadcast peer (the
   // 150-node-scalable pattern -- encrypted peers cap at ~17). One deviation:
   // peer.channel = 0 ("follow the interface's current channel") so

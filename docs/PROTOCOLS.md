@@ -70,8 +70,7 @@ color form — `secs=0` cancels; renders in ANY lifecycle),
 `NB_PROGRAM_SET`(19), `NB_SET_RATE`(5). Receives: `NB_HEARTBEAT`(1, hb-short
 29 B / hb-full 148 B, tail-gated), `NB_CHOREO_STATE`(18).
 
-**Proposed types (the `cambium-direct-frames` branch in resonance-hardware,
-for Ben's review):**
+**Cambium types (allocated in `beneckart/resonance-lighting` `main`):**
 
 ```c
 // 25: bridge -> all, batched per-fixture direct color

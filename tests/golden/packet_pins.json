@@ -1,6 +1,6 @@
 {
   "source": "test_packet_layout.cpp",
-  "source_sha256": "438e1c20fd0df3d3205a437469b7e14801616ceeefb0ddba0bebc6a8bb9358b8",
+  "source_sha256": "56fccbc4033841627f590cc8532d758769ae205dbf356d9afe650e19046d0e78",
   "skipped_check_lines": 7,
   "pins": {
     "sizeof(NbHeader)": 13,
@@ -32,6 +32,12 @@
     "sizeof(NbProgramSet)": 32,
     "sizeof(NbProfile)": 18,
     "sizeof(NbTimeQuality)": 29,
-    "sizeof(NbNeighborSet)": 42
+    "sizeof(NbNeighborSet)": 42,
+    "sizeof(NbDirectEntry)": 7,
+    "offsetof(NbDirectFrame, flags)": 13,
+    "offsetof(NbDirectFrame, count)": 14,
+    "offsetof(NbDirectFrame, entries)": 15,
+    "sizeof(NbDirectFrame)": 141,
+    "sizeof(NbForceLifecycle)": 18
   }
 }

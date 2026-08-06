@@ -5,8 +5,8 @@ test_packet_layout.cpp by tools/extract_packet_goldens.py. Every pin must
 check out against our STRUCT_FIELDS tables -- if the firmware moves a byte,
 this is the tripwire on the Python side.
 
-Types 25/26 don't exist in packet.h yet, so their pins live HERE (Python is
-the layout reference until the firmware PR lands).
+Types 25/26 are part of the same extracted firmware pins as every other
+packet. The focused tests below keep their complete field layouts obvious.
 """
 
 import json
@@ -50,7 +50,7 @@ def test_hb_full_len():
     assert packets.NB_HB_FULL_LEN == 148
 
 
-# ---- local pins for proposed types 25/26 (not in packet.h yet) ------------
+# ---- focused pins for Cambium types 25/26 ----------------------------------
 
 def test_direct_frame_pins():
     assert packets.struct_sizeof("NbDirectEntry") == 7

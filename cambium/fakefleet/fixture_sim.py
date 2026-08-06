@@ -1,8 +1,8 @@
 """VirtualFixture: a firmware-faithful software lantern.
 
 This is the fake fleet's core: one instance behaves, at the packet level,
-like a real fixture running Ben's firmware (resonance-hardware
-firmware/fixture/) plus the cambium-direct-frames branch. It is the test
+like a real fixture running Ben's firmware
+(beneckart/resonance-lighting/firmware/fixture). It is the test
 rig, the zero-hardware demo, and the FTUX rehearsal stage all at once.
 
 Fidelity doctrine: the RX ladder below is HAND-ROLLED with literal struct
@@ -27,8 +27,7 @@ Firmware semantics mirrored (with sources):
   >3 s autonomous fallback -- never blank                (program.h
   RES_SHOWFRAME_HOLD_MS / RES_SHOWFRAME_STALE_MS)
 - direct-frame slew: max 32/channel per 10 Hz render tick, flags bit1
-  (hard-cut) bypasses                                    (prog_direct.cpp,
-  cambium-direct-frames branch)
+  (hard-cut) bypasses                                    (prog_direct.cpp)
 - NB_FORCE_LIFECYCLE: mode 0=force day 1=force night 2=auto, RAM-only
 """
 

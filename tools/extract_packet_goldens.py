@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """Extract golden sizeof/offsetof pins from the firmware layout test.
 
-Reads resonance-hardware/firmware/fixture/tests/test_packet_layout.cpp (the
+Reads resonance-lighting/firmware/fixture/tests/test_packet_layout.cpp (the
 fleet's build-time wire-format tripwire) and writes the numeric CHECK_EQ pins
 to tests/golden/packet_pins.json so tests/test_packet_parity.py can hold
 cambium's Python layouts to the exact same numbers.
@@ -27,7 +27,7 @@ from pathlib import Path
 REPO_ROOT = Path(__file__).resolve().parent.parent
 DEFAULT_CPP = (
     REPO_ROOT.parent
-    / "resonance-hardware/firmware/fixture/tests/test_packet_layout.cpp"
+    / "resonance-lighting/firmware/fixture/tests/test_packet_layout.cpp"
 )
 DEFAULT_OUT = REPO_ROOT / "tests/golden/packet_pins.json"
 
@@ -77,7 +77,7 @@ def main() -> None:
     if not cpp.exists():
         sys.exit(
             f"layout test not found at {cpp}; pass its path as argv[1] "
-            f"(it lives in Ben's resonance-hardware repo)"
+            f"(it lives in Ben's resonance-lighting repo)"
         )
     result = extract(cpp, out)
     print(

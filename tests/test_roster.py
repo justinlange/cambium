@@ -5,13 +5,6 @@ import pytest
 from cambium.model import FixtureClass
 from cambium.roster import TX_CHUNK_SIZE, Roster, normalize_mac
 
-_DOCS_ROOT = Path(__file__).parent.parent.parent
-_REGISTRY_CANDIDATES = [
-    _DOCS_ROOT / name / "ops" / "fleet" / "registry.csv"
-    for name in ("resonance-tree", "resonance-hardware", "resonance-lighting")
-]
-REGISTRY = next((p for p in _REGISTRY_CANDIDATES if p.exists()),
-                _REGISTRY_CANDIDATES[0])
 BENCH10 = Path(__file__).parent.parent / "config" / "roster-bench10.csv"
 BENCH3 = Path(__file__).parent.parent / "config" / "roster-bench3-perimeter.csv"
 
@@ -21,6 +14,20 @@ HEADER = "fixture_id,mac,class,x,y,z,notes\n"
 def write_roster(tmp_path, body, name="roster.csv"):
     p = tmp_path / name
     p.write_text("# a comment line\n" + HEADER + body)
+    return p
+
+
+def write_registry(tmp_path):
+    """Controlled registry sample; the real sibling registry changes at the bench."""
+    p = tmp_path / "registry.csv"
+    p.write_text(
+        "mac,status,role\n"
+        "F2BED4,commissioned,serial_bridge\n"
+        "9E5AE8,enumerated,perimeter_demo\n"
+        "9F2694,commissioned,\n"
+        "F2BDB4,commissioned,\n"
+        "F2BDC0,commissioned,\n"
+    )
     return p
 
 
@@ -210,35 +217,40 @@ def test_tx_partition_empty():
 
 # ---- from_registry ---------------------------------------------------------
 
-def test_from_registry_excludes_bridge_and_uncommissioned():
-    r = Roster.from_registry(REGISTRY)
+def test_from_registry_excludes_bridge_and_uncommissioned(tmp_path):
+    r = Roster.from_registry(write_registry(tmp_path))
     assert "F2BED4" not in r.by_mac  # role=serial_bridge
     assert "9E5AE8" not in r.by_mac  # status=enumerated, not commissioned
-    assert len(r.fixtures) == 26
+    assert [f.mac for f in r.fixtures] == ["9F2694", "F2BDB4", "F2BDC0"]
     assert all(f.cls is FixtureClass.DOWNLIGHT for f in r.fixtures)
     assert all(f.fixture_id is None for f in r.fixtures)
 
 
-def test_from_registry_class_overrides():
-    r = Roster.from_registry(REGISTRY, classes={"68:EE:8F:F2:BD:B4": "perimeter",
-                                                "f2bdc0": "Uplight"})
+def test_from_registry_class_overrides(tmp_path):
+    r = Roster.from_registry(
+        write_registry(tmp_path),
+        classes={"68:EE:8F:F2:BD:B4": "perimeter", "f2bdc0": "Uplight"},
+    )
     assert r.by_mac["F2BDB4"].cls is FixtureClass.PERIMETER
     assert r.by_mac["F2BDC0"].cls is FixtureClass.UPLIGHT
     assert r.by_mac["9F2694"].cls is FixtureClass.DOWNLIGHT
 
 
-def test_from_registry_bad_class_override():
+def test_from_registry_bad_class_override(tmp_path):
     with pytest.raises(ValueError) as e:
-        Roster.from_registry(REGISTRY, classes={"F2BDB4": "spotlight"})
+        Roster.from_registry(
+            write_registry(tmp_path), classes={"F2BDB4": "spotlight"}
+        )
     msg = str(e.value)
     assert "spotlight" in msg
     assert "use one of: downlight, perimeter, uplight, chandelier" in msg
 
 
-def test_bench10_matches_first_ten_eligible_registry_macs():
-    eligible = [f.mac for f in Roster.from_registry(REGISTRY).fixtures]
-    bench = [f.mac for f in Roster.load(BENCH10).fixtures]
-    assert bench == eligible[:10]
+def test_from_registry_accepts_trunk_alias(tmp_path):
+    r = Roster.from_registry(
+        write_registry(tmp_path), classes={"F2BDB4": "trunk"}
+    )
+    assert r.by_mac["F2BDB4"].cls is FixtureClass.UPLIGHT
 
 
 def test_playa_template_loads_empty():

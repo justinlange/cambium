@@ -21,12 +21,18 @@
  +------------------------------------------------------------------+
         |
         v
-   bridge PowerFeather (F2BED4) --ESP-NOW ch 11 broadcast--> ~130 fixtures
-                                                             (10 on bench)
+   M5Stack CoreS3 --ESP-NOW ch 11 broadcast--> nominal 130-fixture fleet
+   Cambium mode                              (3 perimeter units for acceptance)
 ```
 
-The wire contract is Ben's `resonance-hardware/firmware/fixture/src/core/packet.h`
-(protocol v1, packed little-endian, append-only, types 1–24 assigned, 25+ free),
+The CoreS3 runs the binary-modem build from
+`beneckart/resonance-lighting/firmware/cores3_bridge`. The PowerFeather sketch
+in this repo is a compatible fallback and a small protocol-reference
+implementation, not the primary field bridge.
+
+The wire contract is Ben's
+`beneckart/resonance-lighting/firmware/fixture/src/core/packet.h`
+(protocol v1, packed little-endian, append-only, types 1-26 assigned),
 with golden sizes pinned in `firmware/fixture/tests/test_packet_layout.cpp`.
 Cambium's `wire/` mirrors those structs byte-for-byte and re-pins the same
 golden sizes in pytest.
@@ -40,7 +46,7 @@ bytes); each arrow is owned by exactly one module. No fused shortcuts.
 |---|---|---|---|
 | **SimFrame** | What the browser sends: float colors per fixture slot, untrusted, unclamped | `fixture_id` (F000...) | `api` (deserialized off the WS) |
 | **FixtureFrame** | Canonical per-lantern color: RGBW, 8-bit, post-clamp, post-white-extraction | MAC (3-byte compact id) | `normalize` (owns SimFrame -> FixtureFrame, joins via `roster`) |
-| **wire packets** | Packed protocol-v1 bytes — batched direct-frame packets (proposed `NbDirectFrame`, type from the free 25+ range, lands W4 with Ben's sign-off) plus existing types (`NbShowFrame`, `NbIdentify`, `NbProgramSet`, ...) | broadcast (+ target ids inside) | `downlink` (owns FixtureFrame -> packets, using `wire` codecs) |
+| **wire packets** | Packed protocol-v1 bytes -- batched `NbDirectFrame` packets (type 25), `NbForceLifecycle` (type 26), and existing types (`NbShowFrame`, `NbIdentify`, `NbProgramSet`, ...) | broadcast (+ target ids inside) | `downlink` (owns FixtureFrame -> packets, using `wire` codecs) |
 
 `uplink` owns the reverse direction: wire bytes (`NbHeartbeat` short/full,
 `NbChoreoState`) -> JSON for the browser and roster updates.
@@ -61,10 +67,10 @@ bytes); each arrow is owned by exactly one module. No fused shortcuts.
 | `daemon.py` | asyncio composition root wiring the above; the `cambium` entry point | W2 |
 | `fakefleet/` | In-process fake fixtures implementing the firmware doctrine (night gate, ladder, leases) so the whole path runs with zero hardware | W3 |
 
-Not in this repo: the `cambium_bridge` firmware sketch (serial <-> ESP-NOW,
-replaces Constellate's untested reference sketch) is phase W4; the mapping
-pipeline + CLI (`cambium sweep/ingest/align/assign/export/doctor/blink/night`)
-is phase W5.
+The primary CoreS3 bridge firmware and fixture receiver live in
+`beneckart/resonance-lighting`. This repo retains the compatible PowerFeather
+`cambium_bridge` fallback. The mapping pipeline + CLI
+(`cambium sweep/ingest/align/assign/export/doctor/blink/night`) is phase W5.
 
 ## Load-bearing constraints
 

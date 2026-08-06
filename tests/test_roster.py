@@ -5,11 +5,15 @@ import pytest
 from cambium.model import FixtureClass
 from cambium.roster import TX_CHUNK_SIZE, Roster, normalize_mac
 
-REGISTRY = (
-    Path(__file__).parent.parent.parent
-    / "resonance-hardware" / "ops" / "fleet" / "registry.csv"
-)
+_DOCS_ROOT = Path(__file__).parent.parent.parent
+_REGISTRY_CANDIDATES = [
+    _DOCS_ROOT / name / "ops" / "fleet" / "registry.csv"
+    for name in ("resonance-tree", "resonance-hardware", "resonance-lighting")
+]
+REGISTRY = next((p for p in _REGISTRY_CANDIDATES if p.exists()),
+                _REGISTRY_CANDIDATES[0])
 BENCH10 = Path(__file__).parent.parent / "config" / "roster-bench10.csv"
+BENCH3 = Path(__file__).parent.parent / "config" / "roster-bench3-perimeter.csv"
 
 HEADER = "fixture_id,mac,class,x,y,z,notes\n"
 
@@ -63,6 +67,18 @@ def test_load_bench10_ships_valid():
     assert [f.fixture_id for f in r.fixtures] == [f"B00{i}" for i in range(10)]
     assert all(f.cls is FixtureClass.DOWNLIGHT for f in r.fixtures)
     assert "F2BED4" not in r.by_mac  # serial_bridge must never be lightable
+
+
+def test_load_bench3_perimeter_ships_valid():
+    r = Roster.load(BENCH3)
+    assert [f.mac for f in r.fixtures] == ["F3FD88", "F2BE80", "F2BFEC"]
+    assert all(f.cls is FixtureClass.PERIMETER for f in r.fixtures)
+
+
+def test_trunk_is_alias_for_wire_stable_uplight_class(tmp_path):
+    p = write_roster(tmp_path, "T000,F2BDB4,trunk,,,,\n")
+    (fixture,) = Roster.load(p).fixtures
+    assert fixture.cls is FixtureClass.UPLIGHT
 
 
 # ---- Roster.load errors: file, line, fix -----------------------------------
@@ -131,7 +147,8 @@ def test_load_unknown_class(tmp_path):
     with pytest.raises(ValueError) as e:
         Roster.load(p)
     assert_names_file_line_fix(
-        e, p, 3, "use one of: downlight, perimeter, uplight, chandelier"
+        e, p, 3,
+        "use one of: downlight, perimeter, uplight, chandelier, trunk"
     )
 
 

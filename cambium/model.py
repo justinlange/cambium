@@ -13,7 +13,7 @@ class FixtureClass(IntEnum):
     UNKNOWN = 0
     DOWNLIGHT = 1  # 1 px 4 W RGBW + gobo
     PERIMETER = 2  # 37 px SK6812 HEX (GRB, no white channel)
-    UPLIGHT = 3    # 1 px 4 W RGBW
+    UPLIGHT = 3    # legacy firmware/NVS name for the 1 px trunk-light class
     CHANDELIER = 4 # 1 px RGBW safe default
 
     @property

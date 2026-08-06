@@ -17,9 +17,10 @@ TX_CHUNK_SIZE = 18
 ROSTER_COLUMNS = ["fixture_id", "mac", "class", "x", "y", "z", "notes"]
 
 _CLASS_NAMES = {m.name.lower(): m for m in FixtureClass}
+_CLASS_NAMES["trunk"] = FixtureClass.UPLIGHT
 _CLASS_FIX = "use one of: " + ", ".join(
     m.name.lower() for m in FixtureClass if m is not FixtureClass.UNKNOWN
-)
+) + ", trunk (alias for legacy uplight class)"
 
 
 def normalize_mac(raw: str, where: str) -> str:

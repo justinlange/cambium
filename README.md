@@ -7,7 +7,7 @@ Cambium is the trunk between Elliot's browser lighting simulator
 ([resonance-hardware](../resonance-hardware)) — a Python daemon that accepts
 simulator frames as WebSocket JSON, translates them through explicit named
 stages into the fleet's packed wire protocol, and speaks them to a
-serial-attached bridge PowerFeather that broadcasts to ~118 fixtures
+serial-attached bridge PowerFeather that broadcasts to a nominal 130 fixtures
 (10 currently on the bench). It also serves
 [Constellate](../Constellate)'s `light(n)` sweeps over HTTP so the camera
 mapper can locate the fleet in 3D. Named for the thin living layer between
@@ -32,7 +32,7 @@ wood and bark: everything that grows passes through it.
         |
         | ESP-NOW ch 11 broadcast (unencrypted, unacked)
         v
-   fixture fleet  (~118 lanterns, Ben's firmware, wire protocol v1)
+   fixture fleet  (nominally 130 lights, Ben's firmware, wire protocol v1)
 ```
 
 ## Start here

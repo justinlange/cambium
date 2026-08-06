@@ -21,7 +21,7 @@
  +------------------------------------------------------------------+
         |
         v
-   bridge PowerFeather (F2BED4) --ESP-NOW ch 11 broadcast--> ~118 fixtures
+   bridge PowerFeather (F2BED4) --ESP-NOW ch 11 broadcast--> ~130 fixtures
                                                              (10 on bench)
 ```
 
@@ -75,7 +75,7 @@ around them; it never argues with them.
 |---|---|---|
 | Max packet size | **<= 145 B** on the wire | Fixture RX buffer is 192 B (`espnow_link.h RxItem.data[192]`) — longer packets are dropped; old net_bench masters still on the mesh buffer only 160 B (`net_bench.ino data[160]`). 145 B clears the smallest buffer with margin. |
 | Fixture render rate | **10 Hz cap** | `fixture.ino renderTick()` renders at most every 100 ms. Sending faster than 10 Hz per fixture buys nothing. |
-| Channel throughput | **~250 pkt/s practical ceiling** | 5-node feasibility test (`docs/tests/NETWORKING_FEASIBILITY_5NODE_2026-06-07.md`): loss grows ~linearly with aggregate rate (~97.8% PDR at 200 pkt/s, ~94.7% at 500). Batched whole-fleet frames at 5–10 Hz fit; per-fixture unicast streaming (118 x 10 Hz = 1180 pkt/s) does NOT. |
+| Channel throughput | **~250 pkt/s practical ceiling** | 5-node feasibility test (`docs/tests/NETWORKING_FEASIBILITY_5NODE_2026-06-07.md`): loss grows ~linearly with aggregate rate (~97.8% PDR at 200 pkt/s, ~94.7% at 500). The nominal 130-fixture fleet needs 8 batched packets per wave, or 64 pkt/s at 8 Hz; per-fixture unicast streaming (130 x 10 Hz = 1300 pkt/s) does NOT fit. |
 | Delivery model | **Broadcast, unacked** | Single unencrypted broadcast peer (encrypted peers cap at ~17). Any packet can be lost, so every packet must be independently meaningful — full state, never deltas that assume the last one arrived. |
 | Silence ladder | **1 s hold -> 3 s autonomous fallback, 2 s crossfade, never blank** | `choreo/program.h`: `RES_SHOWFRAME_HOLD_MS 1000`, `RES_SHOWFRAME_STALE_MS 3000`, `RES_CHOREO_FADE_MS 2000`; fallback program is a class-tinted breathe, "never blank". Stop sending and the tree keeps living. |
 | Identity | **Last 3 bytes of MAC** | `NbHeader.src_id[3]`; same ids key `registry.csv` (e.g. `9E5AE8` from `D8:85:AC:9E:5A:E8`). `00:00:00` target = all. |

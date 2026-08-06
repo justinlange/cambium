@@ -17,6 +17,10 @@ behaves identically, so any surprise on the bench is hardware, not software.
       resonance-hardware, awaiting Ben's review) is needed for per-fixture
       color streaming and radio night-override
 
+For the Nevada City three-perimeter acceptance bench, substitute
+`--config config/cambium-bench3-perimeter.toml` in every command. Its roster is
+already pinned to `F3FD88`, `F2BE80`, and `F2BFEC`.
+
 ## 1. Flash + connect the bridge
 
 ```
@@ -113,7 +117,7 @@ power budget clamping the request (doctrine; charge the battery).
 | lanterns dimmer than the sim | power-budget clamp — by design | charge; don't fight the cap |
 | `cambium doctor --port` says port busy | the daemon owns the port | use `--daemon http://localhost:8600` instead |
 
-## Scaling to 118 (appendix)
+## Scaling to 130 (appendix)
 
 Same commands. What changes: the sweep takes ~6 min instead of ~30 s;
 `map assign` starts producing real `ambiguous` rows (resolve them in

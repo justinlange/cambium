@@ -1,0 +1,7 @@
+# Nevada City three-fixture Cambium acceptance roster.
+# These are the three built perimeter fixtures temporarily repurposed from the
+# presence/LED bench. MAC is the identity; P000-P002 are bench-only labels.
+fixture_id,mac,class,x,y,z,notes
+P000,F3FD88,perimeter,,,,NC perimeter light 1
+P001,F2BE80,perimeter,,,,NC perimeter light 2
+P002,F2BFEC,perimeter,,,,NC perimeter light 3

@@ -65,18 +65,18 @@ def test_bench10_is_one_packet():
     assert df.count == 10
 
 
-def test_118_fixtures_is_seven_packets_under_wire_cap():
-    roster = make_roster(118)
+def test_130_fixtures_is_eight_packets_under_wire_cap():
+    roster = make_roster(130)
     raws = frame_to_packets(full_frame(roster), roster, HeaderStamper(lambda: 0.0))
-    assert len(raws) == 7  # ceil(118 / 18)
+    assert len(raws) == 8  # ceil(130 / 18)
     dfs = parsed(raws)
-    assert [df.count for df in dfs] == [18] * 6 + [10]
+    assert [df.count for df in dfs] == [18] * 7 + [4]
     # Load-bearing: fixture RX buffer margin caps packets at 145 B on the wire.
     assert all(len(r) <= 145 for r in raws)
 
 
 def test_chunk_membership_matches_tx_partition_and_is_stable():
-    roster = make_roster(118)
+    roster = make_roster(130)
     expected = [[f.mac for f in chunk] for chunk in roster.tx_partition()]
 
     def memberships():
@@ -90,7 +90,7 @@ def test_chunk_membership_matches_tx_partition_and_is_stable():
 
 
 def test_entries_only_for_macs_present_in_frame():
-    roster = make_roster(118)
+    roster = make_roster(130)
     part = roster.tx_partition()
     # Address 3 fixtures in chunk 0 and 2 in chunk 5; every other chunk is
     # empty and must produce NO packet at all.
@@ -105,7 +105,7 @@ def test_entries_only_for_macs_present_in_frame():
 
 
 def test_empty_frame_yields_no_packets():
-    roster = make_roster(118)
+    roster = make_roster(130)
     assert frame_to_packets(
         FixtureFrame(seq=1), roster, HeaderStamper(lambda: 0.0)
     ) == []
@@ -123,9 +123,9 @@ def test_micro_lease_bit_set_by_default_and_overridable():
 
 
 def test_header_seq_monotonic_across_frames():
-    roster = make_roster(118)
+    roster = make_roster(130)
     stamper = HeaderStamper(clock=lambda: 0.0)
     first = parsed(frame_to_packets(full_frame(roster, seq=1), roster, stamper))
     second = parsed(frame_to_packets(full_frame(roster, seq=2), roster, stamper))
-    assert [df.h.seq for df in first] == [1, 2, 3, 4, 5, 6, 7]
-    assert [df.h.seq for df in second] == [8, 9, 10, 11, 12, 13, 14]
+    assert [df.h.seq for df in first] == list(range(1, 9))
+    assert [df.h.seq for df in second] == list(range(9, 17))

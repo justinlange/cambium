@@ -1,3 +1,3 @@
-# edit this file: full playa roster (~118 fixtures); class column: downlight|perimeter|uplight|chandelier
+# edit this file: full playa roster (~130 fixtures); class column: downlight|perimeter|trunk|chandelier
 # mac accepts full 68:EE:8F:F2:BD:B4 or short F2BDB4; x,y,z in meters or all empty until surveyed
 fixture_id,mac,class,x,y,z,notes

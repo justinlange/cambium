@@ -328,7 +328,7 @@ def test_cmd_shells_exact_bytes():
 
 
 # ---------------------------------------------------------------------------
-# Proposed type 25: DirectFrame
+# Type 25: DirectFrame
 # ---------------------------------------------------------------------------
 
 def test_direct_frame_roundtrip():
@@ -376,7 +376,7 @@ def test_direct_frame_parse_is_liberal_on_short_body():
 
 
 # ---------------------------------------------------------------------------
-# Proposed type 26: ForceLifecycle
+# Type 26: ForceLifecycle
 # ---------------------------------------------------------------------------
 
 def test_force_lifecycle_roundtrip():

@@ -1,8 +1,8 @@
 """VirtualFixture: a firmware-faithful software lantern.
 
 This is the fake fleet's core: one instance behaves, at the packet level,
-like a real fixture running Ben's firmware (resonance-hardware
-firmware/fixture/) plus the cambium-direct-frames branch. It is the test
+like a real fixture running Ben's firmware
+(beneckart/resonance-lighting/firmware/fixture). It is the test
 rig, the zero-hardware demo, and the FTUX rehearsal stage all at once.
 
 Fidelity doctrine: the RX ladder below is HAND-ROLLED with literal struct
@@ -27,8 +27,7 @@ Firmware semantics mirrored (with sources):
   >3 s autonomous fallback -- never blank                (program.h
   RES_SHOWFRAME_HOLD_MS / RES_SHOWFRAME_STALE_MS)
 - direct-frame slew: max 32/channel per 10 Hz render tick, flags bit1
-  (hard-cut) bypasses                                    (prog_direct.cpp,
-  cambium-direct-frames branch)
+  (hard-cut) bypasses                                    (prog_direct.cpp)
 - NB_FORCE_LIFECYCLE: mode 0=force day 1=force night 2=auto, RAM-only
 """
 
@@ -346,7 +345,7 @@ class VirtualFixture:
         """Heartbeats due at `now`: hb-short 1 Hz (dev), hb-full 60 s + edges."""
         now = self._clock() if now is None else now
         out: list[bytes] = []
-        life = 1 if self.night else 0
+        life = 3 if self.night else 1
         if life != self._last_life_reported:
             self._full_due = True
         if self._full_due or now >= self._next_full_at:
@@ -378,7 +377,7 @@ class VirtualFixture:
             # Only the fields cambium's FleetState reads are non-zero; the
             # remaining tails stay zeroed (valid absent sentinels).
             struct.pack_into("<24s", buf, _HB_OFF_FW_REV, b"fake-fleet-0.1")
-            buf[_HB_OFF_LIFE_STATE] = 1 if self.night else 0
+            buf[_HB_OFF_LIFE_STATE] = 3 if self.night else 1
             buf[_HB_OFF_POWER_TIER] = 0
         return bytes(buf)
 

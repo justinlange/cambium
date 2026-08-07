@@ -74,7 +74,7 @@ def test_production_parser_roundtrip_both_lengths():
     assert isinstance(ev_full, PeerPacket) and ev_full.mac_short == "0A0001"
     hb = ev_full.packet
     assert hb.batt_ma == -120  # signedness survives end to end
-    assert hb.life_state == 0  # tail 13 present in hb-full
+    assert hb.life_state == 1  # LIFE_DAY_CHARGE; tail 13 present in hb-full
     assert hb.fw_rev == "fake-fleet-0.1"
 
     ev_short = parser.feed(FTYPE_RADIO_RX, rx_payload(f, short))

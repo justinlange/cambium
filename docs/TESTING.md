@@ -22,10 +22,11 @@ Idioms (borrowed from Constellate's suite): constructor-injected fake
 clocks/transports with scripted behavior, ground-truth synthetics, full-stack
 in-process e2e without ports, and CLI errors asserted to CONTAIN THEIR FIX.
 
-Firmware: `resonance-hardware` branch `cambium-direct-frames` — `bash
+Firmware: `beneckart/resonance-lighting` `main` -- `bash
 firmware/fixture/tests/run_tests.sh` (native, -Werror) covers PROG_DIRECT
-slew/hard-cut/ladder + the golden rows. The bridge sketch compile-gates via
-`arduino-cli compile --fqbn esp32:esp32:esp32s3`.
+slew/hard-cut/ladder + the golden rows. The primary bridge is compiled from
+`firmware/cores3_bridge` with `build.sh --cambium`; the fallback PowerFeather
+sketch remains compile-gated with C/Python COBS parity.
 
 Elliot branch `cambium-ws-bridge`: `npm run build` + `npm test` (263). The
 `twin.spec` Playwright timeout pre-dates the branch (fails identically
@@ -44,3 +45,8 @@ Each row names the runbook step that is its manual test
 | identify visibility in daylight, camera exposure | Constellate's own `blink` + sweep |
 | serial/USB quirks of the physical bridge | doctor stages 1–3 |
 | PROG_DIRECT slew feel at 10 Hz (step 32 is a proposal) | M3/M4 bench session with Ben |
+
+The 2026-08-06 Nevada City acceptance passed on three perimeter fixtures:
+3/3 heartbeat census and roll-call, direct program 3 on all nodes, 67/67
+bridge sends with no TX/CRC/RX-drop errors, and autonomous fallback after
+more than 3 seconds of silence.

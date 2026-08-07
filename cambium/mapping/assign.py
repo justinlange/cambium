@@ -1,7 +1,7 @@
 """map assign: which measured lantern occupies which authored slot.
 
 Mutual nearest-neighbor with an explicit ambiguity test -- at bench-10 the
-report is 10 obvious lines; at 118 the ambiguous rows are exactly the ones
+report is 10 obvious lines; at 130 the ambiguous rows are exactly the ones
 a human (or Elliot's commissioning UI) must confirm. Overrides always win.
 
 Interop, not duplication: this module reads and writes the calibration map

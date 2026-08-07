@@ -6,26 +6,38 @@ behaves identically, so any surprise on the bench is hardware, not software.
 ## Pre-flight
 
 - [ ] Lanterns charged (doctor will show battery mV; LFP wants > 3200)
-- [ ] One spare PowerFeather to be the bridge — **F2BED4** is earmarked
-      (`ops/fleet/registry.csv` role `serial_bridge`)
+- [ ] One M5Stack CoreS3 to be the bridge (primary); PowerFeather **F2BED4**
+      remains the compatible fallback (`ops/fleet/registry.csv` role
+      `serial_bridge`)
 - [ ] Everything is on **ESP-NOW channel 11** (the fleet's commissioned
       channel; a bridge on any other channel hears NOTHING)
 - [ ] `config/roster-bench10.csv` edited to the 10 MACs actually on the bench
 - [ ] For the sweep: 2–3 phones + a tape measure, on the same LAN as the laptop
-- [ ] Fixture firmware: stock `fixture-2026-07-30.1` works for **identify /
-      sweep / heartbeats**; the **`cambium-direct-frames` branch** (in
-      resonance-hardware, awaiting Ben's review) is needed for per-fixture
-      color streaming and radio night-override
+- [ ] Fixture firmware: current `beneckart/resonance-lighting` `main` supports
+      identify, sweeps, heartbeats, per-fixture color streaming, and radio
+      night override
 
-## 1. Flash + connect the bridge
+For the Nevada City three-perimeter acceptance bench, substitute
+`--config config/cambium-bench3-perimeter.toml` in every command. Its roster is
+already pinned to `F3FD88`, `F2BE80`, and `F2BFEC`.
+
+## 1. Build, flash, and connect the CoreS3 bridge
 
 ```
-cd cambium/firmware/cambium_bridge
-./build.sh --port /dev/tty.usbmodem101        # requires esp32 core >= 3.x
+cd ../resonance-lighting/firmware/cores3_bridge
+bash ./build.sh --cambium --channel 11 \
+  --build-path build/cambium-bench-r1
+arduino-cli upload --fqbn esp32:esp32:m5stack_cores3 \
+  --port /dev/tty.usbmodem101 \
+  --build-path build/cambium-bench-r1 .
 ```
 
-(On esp32 core 2.x the script tells you the two fixes: upgrade the core, or
-`--fqbn esp32:esp32:esp32s3` for a generic-S3 build.)
+Build once into a named path, then upload that exact artifact. Keep a normal
+CoreS3 dashboard build available for restoration after the Cambium session.
+The bridge screen should identify `cores3-cb-0.1` and show channel 11.
+
+Fallback only: `cambium/firmware/cambium_bridge` contains the PowerFeather
+modem build and uses the same COBS/CRC contract.
 
 ## 2. Doctor
 
@@ -113,7 +125,7 @@ power budget clamping the request (doctrine; charge the battery).
 | lanterns dimmer than the sim | power-budget clamp — by design | charge; don't fight the cap |
 | `cambium doctor --port` says port busy | the daemon owns the port | use `--daemon http://localhost:8600` instead |
 
-## Scaling to 118 (appendix)
+## Scaling to 130 (appendix)
 
 Same commands. What changes: the sweep takes ~6 min instead of ~30 s;
 `map assign` starts producing real `ambiguous` rows (resolve them in

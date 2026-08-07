@@ -1,0 +1,17 @@
+# Nevada City three-perimeter-fixture acceptance configuration.
+
+[server]
+host = "0.0.0.0"
+port = 8600
+
+[radio]
+channel = 11
+tx_hz = 8.0
+stale_input_s = 2.0
+
+[color]
+white_extract = "subtract"
+
+[paths]
+site = "bench"
+roster = "config/roster-bench3-perimeter.csv"

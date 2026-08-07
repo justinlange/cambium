@@ -1,10 +1,14 @@
-# cambium_bridge
+# cambium_bridge (PowerFeather fallback)
 
 Dumb radio modem: relays COBS-framed USB serial <-> ESP-NOW broadcast for the
 cambium daemon. It knows nothing about Nb packet internals, so packet.h can
 evolve forever without reflashing this board. Serial contract ground truth:
 `cambium/wire/framing.py` + `cobs.py`; C/Python parity is enforced by
 `tests/test_c_cobs_parity.py` against `tests/golden/cobs_vectors.json`.
+
+The primary tested bridge is now the M5Stack CoreS3 Cambium mode in
+`beneckart/resonance-lighting/firmware/cores3_bridge`. Keep this sketch as a
+compatible spare bridge and as the compact serial-contract reference.
 
 ## Flash
 

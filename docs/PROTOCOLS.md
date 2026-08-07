@@ -70,8 +70,7 @@ color form — `secs=0` cancels; renders in ANY lifecycle),
 `NB_PROGRAM_SET`(19), `NB_SET_RATE`(5). Receives: `NB_HEARTBEAT`(1, hb-short
 29 B / hb-full 148 B, tail-gated), `NB_CHOREO_STATE`(18).
 
-**Proposed types (the `cambium-direct-frames` branch in resonance-hardware,
-for Ben's review):**
+**Cambium types (allocated in `beneckart/resonance-lighting` `main`):**
 
 ```c
 // 25: bridge -> all, batched per-fixture direct color
@@ -81,7 +80,7 @@ struct NbDirectFrame  { NbHeader h;
                                          // bit1 = hard-cut (skip slew)
                         uint8_t count;   // receiver: min(count, (len-15)/7)
                         NbDirectEntry entries[18]; };                     // 141 B
-// wire length 15 + 7n; 118 fixtures = 7 packets/frame; 8 Hz = 56 pkt/s,
+// wire length 15 + 7n; 130 fixtures = 8 packets/frame; 8 Hz = 64 pkt/s,
 // well inside the ~250 pkt/s channel ceiling next to ~180 pkt/s of uplink.
 
 // 26: bridge -> all/target, radio equivalent of serial 'N'

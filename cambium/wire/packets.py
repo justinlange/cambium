@@ -1,7 +1,7 @@
 """Byte-truth mirror of the fleet ESP-NOW wire protocol (protocol v1).
 
 This module mirrors, field-by-field, the packed little-endian structs in
-resonance-hardware/firmware/fixture/src/core/packet.h. That header is the
+beneckart/resonance-lighting/firmware/fixture/src/core/packet.h. That header is the
 single allocation authority; golden sizeof/offsetof pins live in
 firmware/fixture/tests/test_packet_layout.cpp and are re-checked here via
 tools/extract_packet_goldens.py -> tests/golden/packet_pins.json.
@@ -16,10 +16,9 @@ Append-only doctrine (same as the firmware):
     back as Unknown(type, raw); absent tail fields come back as None (or the
     documented legacy default, e.g. ShowFrame.val -> 255).
 
-Types 25 (NB_DIRECT_FRAME) and 26 (NB_FORCE_LIFECYCLE) are PROPOSED by
-cambium and do not exist in packet.h yet; a firmware PR adds them later.
-Their layouts are pinned by tests/test_packet_parity.py so the Python side
-is the reference until then.
+Types 25 (NB_DIRECT_FRAME) and 26 (NB_FORCE_LIFECYCLE) are allocated in the
+firmware header. Their layouts are extracted from the firmware's native
+layout test and pinned here with every other protocol-v1 struct.
 
 No magic bytes and no CRC at this layer -- ESP-NOW frames carry these
 structs bare. Framing/CRC for the serial bridge lives in cambium.wire.framing.
@@ -61,7 +60,7 @@ class NbType(IntEnum):
     NEIGHBOR_REPORT = 22  # RESERVED
     EVENT = 23  # RESERVED
     NEIGHBOR_SET = 24
-    # 25..26: proposed by cambium (not in packet.h yet -- see module docstring).
+    # 25..26: Cambium direct streaming and lifecycle override.
     DIRECT_FRAME = 25
     FORCE_LIFECYCLE = 26
 
@@ -267,7 +266,7 @@ STRUCT_FIELDS: dict[str, list[tuple[str, str]]] = {
         ("count", "B"),
         ("neighbor_ids", "24s"),  # uint8[8][3]
     ],
-    # ---- proposed types 25/26 (not in packet.h yet) -----------------------
+    # ---- Cambium types 25/26 -----------------------------------------------
     "NbDirectEntry": [("id", "3s"), ("r", "B"), ("g", "B"), ("b", "B"), ("w", "B")],
     "NbDirectFrame": [
         ("h", "13s"),
@@ -522,7 +521,7 @@ def direct_frame(
     entries: list[tuple[bytes, int, int, int, int]],
     flags: int = 0,
 ) -> bytes:
-    """NB_DIRECT_FRAME (proposed type 25): per-fixture RGBW from the browser
+    """NB_DIRECT_FRAME (type 25): per-fixture RGBW from the browser
     sim. entries = [(short_id 3 bytes, r, g, b, w), ...], max 18 (ESP-NOW
     payload budget). flags bit0=10s micro-lease grant, bit1=hard-cut/skip-slew.
     Wire length is always 15 + 7*len(entries).
@@ -549,7 +548,7 @@ def direct_frame(
 
 
 def force_lifecycle(h: NbHeader, target: bytes, mode: int, flags: int = 0) -> bytes:
-    """NB_FORCE_LIFECYCLE (proposed type 26). mode: 0=force day, 1=force
+    """NB_FORCE_LIFECYCLE (type 26). mode: 0=force day, 1=force
     night, 2=auto. target 00:00:00 = all. flags reserved (send 0)."""
     if mode not in (0, 1, 2):
         raise ValueError(f"mode={mode} invalid; use 0=force day, 1=force night, 2=auto")

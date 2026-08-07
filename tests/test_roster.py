@@ -5,11 +5,8 @@ import pytest
 from cambium.model import FixtureClass
 from cambium.roster import TX_CHUNK_SIZE, Roster, normalize_mac
 
-REGISTRY = (
-    Path(__file__).parent.parent.parent
-    / "resonance-hardware" / "ops" / "fleet" / "registry.csv"
-)
 BENCH10 = Path(__file__).parent.parent / "config" / "roster-bench10.csv"
+BENCH3 = Path(__file__).parent.parent / "config" / "roster-bench3-perimeter.csv"
 
 HEADER = "fixture_id,mac,class,x,y,z,notes\n"
 
@@ -17,6 +14,20 @@ HEADER = "fixture_id,mac,class,x,y,z,notes\n"
 def write_roster(tmp_path, body, name="roster.csv"):
     p = tmp_path / name
     p.write_text("# a comment line\n" + HEADER + body)
+    return p
+
+
+def write_registry(tmp_path):
+    """Controlled registry sample; the real sibling registry changes at the bench."""
+    p = tmp_path / "registry.csv"
+    p.write_text(
+        "mac,status,role\n"
+        "F2BED4,commissioned,serial_bridge\n"
+        "9E5AE8,enumerated,perimeter_demo\n"
+        "9F2694,commissioned,\n"
+        "F2BDB4,commissioned,\n"
+        "F2BDC0,commissioned,\n"
+    )
     return p
 
 
@@ -63,6 +74,18 @@ def test_load_bench10_ships_valid():
     assert [f.fixture_id for f in r.fixtures] == [f"B00{i}" for i in range(10)]
     assert all(f.cls is FixtureClass.DOWNLIGHT for f in r.fixtures)
     assert "F2BED4" not in r.by_mac  # serial_bridge must never be lightable
+
+
+def test_load_bench3_perimeter_ships_valid():
+    r = Roster.load(BENCH3)
+    assert [f.mac for f in r.fixtures] == ["F3FD88", "F2BE80", "F2BFEC"]
+    assert all(f.cls is FixtureClass.PERIMETER for f in r.fixtures)
+
+
+def test_trunk_is_alias_for_wire_stable_uplight_class(tmp_path):
+    p = write_roster(tmp_path, "T000,F2BDB4,trunk,,,,\n")
+    (fixture,) = Roster.load(p).fixtures
+    assert fixture.cls is FixtureClass.UPLIGHT
 
 
 # ---- Roster.load errors: file, line, fix -----------------------------------
@@ -131,7 +154,8 @@ def test_load_unknown_class(tmp_path):
     with pytest.raises(ValueError) as e:
         Roster.load(p)
     assert_names_file_line_fix(
-        e, p, 3, "use one of: downlight, perimeter, uplight, chandelier"
+        e, p, 3,
+        "use one of: downlight, perimeter, uplight, chandelier, trunk"
     )
 
 
@@ -193,35 +217,40 @@ def test_tx_partition_empty():
 
 # ---- from_registry ---------------------------------------------------------
 
-def test_from_registry_excludes_bridge_and_uncommissioned():
-    r = Roster.from_registry(REGISTRY)
+def test_from_registry_excludes_bridge_and_uncommissioned(tmp_path):
+    r = Roster.from_registry(write_registry(tmp_path))
     assert "F2BED4" not in r.by_mac  # role=serial_bridge
     assert "9E5AE8" not in r.by_mac  # status=enumerated, not commissioned
-    assert len(r.fixtures) == 26
+    assert [f.mac for f in r.fixtures] == ["9F2694", "F2BDB4", "F2BDC0"]
     assert all(f.cls is FixtureClass.DOWNLIGHT for f in r.fixtures)
     assert all(f.fixture_id is None for f in r.fixtures)
 
 
-def test_from_registry_class_overrides():
-    r = Roster.from_registry(REGISTRY, classes={"68:EE:8F:F2:BD:B4": "perimeter",
-                                                "f2bdc0": "Uplight"})
+def test_from_registry_class_overrides(tmp_path):
+    r = Roster.from_registry(
+        write_registry(tmp_path),
+        classes={"68:EE:8F:F2:BD:B4": "perimeter", "f2bdc0": "Uplight"},
+    )
     assert r.by_mac["F2BDB4"].cls is FixtureClass.PERIMETER
     assert r.by_mac["F2BDC0"].cls is FixtureClass.UPLIGHT
     assert r.by_mac["9F2694"].cls is FixtureClass.DOWNLIGHT
 
 
-def test_from_registry_bad_class_override():
+def test_from_registry_bad_class_override(tmp_path):
     with pytest.raises(ValueError) as e:
-        Roster.from_registry(REGISTRY, classes={"F2BDB4": "spotlight"})
+        Roster.from_registry(
+            write_registry(tmp_path), classes={"F2BDB4": "spotlight"}
+        )
     msg = str(e.value)
     assert "spotlight" in msg
     assert "use one of: downlight, perimeter, uplight, chandelier" in msg
 
 
-def test_bench10_matches_first_ten_eligible_registry_macs():
-    eligible = [f.mac for f in Roster.from_registry(REGISTRY).fixtures]
-    bench = [f.mac for f in Roster.load(BENCH10).fixtures]
-    assert bench == eligible[:10]
+def test_from_registry_accepts_trunk_alias(tmp_path):
+    r = Roster.from_registry(
+        write_registry(tmp_path), classes={"F2BDB4": "trunk"}
+    )
+    assert r.by_mac["F2BDB4"].cls is FixtureClass.UPLIGHT
 
 
 def test_playa_template_loads_empty():

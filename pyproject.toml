@@ -7,6 +7,8 @@ name = "cambium"
 version = "0.1.0"
 description = "Middleware between the Resonance Tree lighting simulator and the ESP-NOW lantern fleet — the living layer between wood and bark."
 readme = "README.md"
+license = "MIT"
+license-files = ["LICENSE"]
 requires-python = ">=3.12"
 dependencies = [
     "aiohttp>=3.9",

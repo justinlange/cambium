@@ -92,6 +92,17 @@ tape-measure; here it's pre-baked from ground truth.
 
 ## 6. Drive it from Elliot's simulator
 
+The sim addresses lanterns by *its* fixture ids, so the fake fleet must be
+built from the same fixtures file — a `--count` fleet (synthetic ids) will
+answer every frame with `err: ... unknown fixture ids; add them to the
+roster CSV`. Restart the step-2 fleet from the app's file (Ctrl-C it first):
+
+```
+cambium fakefleet run --fixtures ../resonance-lighting/app/public/fixtures.json --start-night
+```
+
+(`--start-night` is fine here — you already rehearsed the gate in step 3.)
+
 ```
 cd ../resonance-lighting/app && npm install && npm run dev
 ```

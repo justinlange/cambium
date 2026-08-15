@@ -44,6 +44,7 @@ screen exposes radio/serial health without contaminating the binary stream.
 
 | You have | Read |
 |---|---|
+| You are Elliot | [docs/FOR-ELLIOT.md](docs/FOR-ELLIOT.md) — drive the real tree from your simulator, no terminal |
 | No hardware at all | [docs/QUICKSTART-NO-HARDWARE.md](docs/QUICKSTART-NO-HARDWARE.md) — fake fleet + simulator, ~15 min |
 | The 10-lantern bench | [docs/QUICKSTART-BENCH10.md](docs/QUICKSTART-BENCH10.md) — bridge + real fixtures + what-if table |
 | A sweep to run | [docs/MAPPING.md](docs/MAPPING.md) — frames, artifacts, scale doctrine |

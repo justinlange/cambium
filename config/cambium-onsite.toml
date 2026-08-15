@@ -1,0 +1,17 @@
+# On-site PoC 2026-08-14: CoreS3 bridge on USB, 16 heard lanterns, no positions.
+
+[server]
+host = "0.0.0.0"
+port = 8600
+
+[radio]
+channel = 11
+tx_hz = 8.0
+stale_input_s = 2.0
+
+[color]
+white_extract = "subtract"
+
+[paths]
+site = "onsite"
+roster = "config/roster-onsite.csv"

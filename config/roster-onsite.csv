@@ -1,0 +1,23 @@
+# On-site PoC roster 2026-08-14: the 16 lanterns heard by doctor census.
+# Positions unknown (no sweep yet) — sim patterns will be spatially scrambled
+# on the physical tree, which is fine for first-control. Class defaulted to
+# downlight; fix per-lantern when known.
+fixture_id,mac,class,x,y,z,notes
+F000,9E5A84,downlight,,,,heard rssi=-61 soc=1%
+F001,9E5A94,downlight,,,,heard rssi=-49
+F002,9E668C,downlight,,,,heard rssi=-57
+F003,9F0E54,downlight,,,,heard rssi=-43 soc=3%
+F004,9F26BC,downlight,,,,heard rssi=-54 night
+F005,9F26E4,downlight,,,,heard rssi=-47 soc=1%
+F006,F2B7DC,downlight,,,,heard rssi=-48
+F007,F2BE20,downlight,,,,heard rssi=-58 night
+F008,F2BE48,downlight,,,,heard rssi=-52
+F009,F2BEA4,downlight,,,,heard rssi=-60 night
+F010,F2BEE4,downlight,,,,heard rssi=-61 soc=1% day-charge
+F011,F2BF54,downlight,,,,heard rssi=-44 soc=99% day-charge
+F012,F2BF8C,downlight,,,,heard rssi=-58
+F013,F3FC90,downlight,,,,heard rssi=-55 night
+F014,F40268,downlight,,,,heard rssi=-37 soc=1%
+F015,F40364,downlight,,,,heard rssi=-47
+F016,F2BDB0,downlight,,,,joined wifi 2026-08-14 and OTA'd
+F017,F2BE0C,downlight,,,,joined wifi 2026-08-14 and OTA'd
